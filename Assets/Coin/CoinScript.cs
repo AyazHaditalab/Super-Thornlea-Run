@@ -10,7 +10,10 @@ public class CoinScript : MonoBehaviour
     public List<Sprite> animationSprites = new List<Sprite>();
     public GameObject coinObtained;
     public int scoreIncrease;
-    public float animationSpeed = 5.0f; // Adjust the animation speed as needed
+    public float animationSpeed = 5.0f;
+    public AudioSource audioSource;
+    private float hitTime = 0;
+    private bool isHit = false;
 
     private void Start()
     {
@@ -22,7 +25,7 @@ public class CoinScript : MonoBehaviour
     {
         int currentFrame = 0;
 
-        while (true)
+        while (!isHit)
         {
             // Switch to the next sprite
             spriteRenderer.sprite = animationSprites[currentFrame];
@@ -37,12 +40,23 @@ public class CoinScript : MonoBehaviour
 
     void Update()
     {
-        if (brickUnderCoin != null)
+        if (isHit)
         {
-            if (brickUnderCoin.GetComponent<BrickJiggleScript>().brickJiggle)
+            hitTime += Time.deltaTime;
+            if (hitTime > 2.0f)
             {
-                scoreManagerScript.AddScore(scoreIncrease);
                 Destroy(gameObject);
+            }
+        } 
+        else
+        {
+            if (brickUnderCoin != null)
+            {
+                if (brickUnderCoin.GetComponent<BrickJiggleScript>().brickJiggle)
+                {
+                    scoreManagerScript.AddScore(scoreIncrease);
+                    Destroy(gameObject);
+                }
             }
         }
     }
@@ -52,7 +66,9 @@ public class CoinScript : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             scoreManagerScript.AddScore(scoreIncrease);
-            Destroy(gameObject);
+            Destroy(spriteRenderer);
+            isHit = true;
+            audioSource.Play();
         }
     }
 }
